@@ -1,41 +1,40 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
-using AvaloniaBlazorHybridDemo.Components;
-using AvaloniaBlazorWebView;
+using AvaloniaBlazorHybridDemo.Blazor;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
+using BlazorDispatcher = Microsoft.AspNetCore.Components.Dispatcher;
 
 namespace AvaloniaBlazorHybridDemo;
 
 public partial class App : Application
 {
+    /// <summary>DI container shared by the native shell and the Razor components.</summary>
+    public static IServiceProvider Services { get; private set; } = null!;
+
+    /// <summary>Blazor's renderer dispatcher, bound to Avalonia's UI thread.</summary>
+    public static BlazorDispatcher BlazorDispatcher { get; private set; } = null!;
+
     public override void Initialize() => AvaloniaXamlLoader.Load(this);
 
     public override void RegisterServices()
     {
         base.RegisterServices();
 
-        // Blazor Hybrid: Razor components run in this process and are rendered
-        // into a native WebView. No web server, no WASM, no SignalR circuit.
-        AvaloniaBlazorWebViewBuilder.Initialize(
-            webConfig =>
-            {
-                webConfig.AreDevToolEnabled = true;
-                webConfig.AreDefaultContextMenusEnabled = true;
-            },
-            setting =>
-            {
-                setting.ComponentType = typeof(AppWeb);
-                setting.Selector = "#app";
-                setting.WWWRoot = "wwwroot";
-                setting.ResourceAssembly = typeof(AppWeb).Assembly;
-            },
-            services =>
-            {
-                // Any .NET service registered here can be @inject-ed in Razor,
-                // which is what makes this "Hybrid" rather than a hosted web app.
-                services.AddSingleton<NativeHostInfo>();
-            });
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddBlazorWebView();
+        services.TryAddSingleton<JSComponentConfigurationStore>();
+
+        // Any .NET service registered here can be @inject-ed in Razor - that is what
+        // makes this a real Hybrid app rather than a hosted web page.
+        services.AddSingleton<NativeHostInfo>();
+
+        Services = services.BuildServiceProvider();
+        BlazorDispatcher = new AvaloniaBlazorDispatcher();
     }
 
     public override void OnFrameworkInitializationCompleted()

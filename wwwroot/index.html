@@ -6,6 +6,7 @@
     <title>Avalonia Blazor Hybrid · ura.cn</title>
     <base href="/" />
     <link href="css/app.css" rel="stylesheet" />
+    <script src="blazor/bridge.js"></script>
 </head>
 <body>
     <div id="app">
@@ -18,7 +19,8 @@
         <a class="dismiss">✕</a>
     </div>
 
-    <!-- Provided by Microsoft.AspNetCore.Components.WebView, not from disk -->
-    <script src="_framework/blazor.webview.js"></script>
+    <!-- Shipped on disk (wwwroot/blazor/) so NativeAOT needs no static-web-assets
+         manifest, which would otherwise depend on Assembly.Location. -->
+    <script src="blazor/blazor.webview.js"></script>
 </body>
 </html>

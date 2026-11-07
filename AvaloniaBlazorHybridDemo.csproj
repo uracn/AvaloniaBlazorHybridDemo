@@ -6,13 +6,12 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <RootNamespace>AvaloniaBlazorHybridDemo</RootNamespace>
-    <!-- Blazor CSS isolation / scoped CSS is handled by Blazor, not Avalonia -->
     <EnableDefaultCssItems>false</EnableDefaultCssItems>
+    <!-- One hand-written COM vtable call is used for WebView2's virtual host mapping. -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- Avalonia 12.1.5：已实测与 BlazorWebView.Avalonia.Cross / WebView.Avalonia.Desktop.Cross
-         11.3.1 兼容（编译 0 警告，首页渲染、路由、计数器交互均正常）。 -->
     <PackageReference Include="Avalonia" Version="12.1.5" />
     <PackageReference Include="Avalonia.Desktop" Version="12.1.5" />
     <PackageReference Include="Avalonia.Themes.Fluent" Version="12.1.5" />
@@ -22,25 +21,44 @@
       <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
     </PackageReference>
 
-    <!-- Avalonia-hosted Blazor Hybrid: Razor components run in-process, rendered by a native WebView -->
-    <PackageReference Include="BlazorWebView.Avalonia.Cross" Version="11.3.1" />
-    <PackageReference Include="WebView.Avalonia.Desktop.Cross" Version="11.3.1" />
+    <!-- Avalonia 12's official WebView is AOT-compatible: its Windows backend uses
+         GeneratedComInterface / StrategyBasedComWrappers instead of the legacy
+         [ComImport] based Microsoft.Web.WebView2.Core, which cannot work under
+         NativeAOT (IL3052 / ComWrappers exception). -->
+    <PackageReference Include="Avalonia.Controls.WebView" Version="12.1.1" />
+
+    <!-- Official Blazor Hybrid rendering pipeline (WebViewManager + IPC). -->
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="10.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebView" Version="10.0.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.0" />
+    <PackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="10.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.0" />
   </ItemGroup>
 
   <ItemGroup>
     <Content Update="wwwroot\**">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
   </ItemGroup>
 
-  <!-- ===== 实验性 Windows NativeAOT（已实测：不可用）=====
-       参照 MauiBlazorAotDemo：TrimmerRootDescriptor 保留反射入口 +
-       JsonSerializerIsReflectionEnabledByDefault 重新开启反射式 System.Text.Json。
-       实测结果：ILC 确实吃进 Roots.xml（descriptor 参数），exe 由 23MB 增至 52MB，
-       DryIoc 构造函数被裁导致的启动崩溃被修好、Avalonia 窗口能出现；
-       但 WebView2 浏览器进程完全没创建（Assembly.Location / CodeBase 在 AOT 下失效），
-       内容区全黑，Blazor 根本没有机会启动。后面还有 IpcCommon 反射式 JSON 序列化一关。
-       保留此开关仅供复现实验；默认 CoreCLR + ReadyToRun 发布不受影响。 -->
+  <!-- blazor.webview.js fetches "_framework/blazor.modules.json" before it sends
+       AttachPage. WebView2's virtual-host mapping serves files straight from disk,
+       so the file must exist physically. It is kept OUTSIDE wwwroot because the
+       Microsoft.AspNetCore.Components.WebView package already registers the same
+       path as a static web asset (a duplicate would break the SDK manifest). -->
+  <ItemGroup>
+    <None Include="Assets\blazor.modules.json"
+          Link="wwwroot\_framework\blazor.modules.json"
+          CopyToOutputDirectory="PreserveNewest"
+          CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <!-- Windows NativeAOT: .\publish-aot.ps1 produces a single native executable.
+       Roots.xml keeps reflection entry points used by Blazor component activation,
+       routing, JS interop and IPC JSON serialization.
+       JsonSerializerIsReflectionEnabledByDefault re-enables the reflection-based
+       System.Text.Json path in Components.WebView.IpcCommon. -->
   <PropertyGroup Condition="'$(EnableWindowsAot)' == 'true'">
     <PublishAot>true</PublishAot>
     <IsAotCompatible>true</IsAotCompatible>

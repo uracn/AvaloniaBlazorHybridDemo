@@ -1,0 +1,127 @@
+@page "/about"
+@inject NativeHostInfo Host
+
+<PageTitle>关于 · Avalonia Blazor Hybrid · ura.cn</PageTitle>
+
+<h1>关于这个项目</h1>
+<p class="lead">
+    一个把 Blazor 的 Razor 组件放进 Avalonia 桌面窗口的最小可运行样例。
+    没有 Kestrel、没有 WebAssembly、没有 SignalR：Razor 组件就在本进程的 .NET 运行时里执行，
+    WebView 只负责把渲染树画成 DOM。项目同时验证了 NativeAOT 单文件发布可行性。
+</p>
+
+<div class="tags">
+    <span class="tag">Avalonia @Host.AvaloniaMajorVersion</span>
+    <span class="tag">.NET 10</span>
+    <span class="tag">Blazor Hybrid</span>
+    <span class="tag">WebView2</span>
+    <span class="tag">NativeAOT</span>
+    <span class="tag tag-accent">ura.cn</span>
+</div>
+
+<section class="grid">
+    <div class="card">
+        <div class="card-title">组成</div>
+        <table class="table">
+            <tbody>
+                <tr><td>UI 外壳</td><td>Avalonia 12.1.5（Fluent 主题 + Inter 字体）</td></tr>
+                <tr><td>原生渲染</td><td><code>Avalonia.Controls.WebView</code> 12.1.1</td></tr>
+                <tr><td>组件模型</td><td>Razor + <code>WebViewManager</code>（ASP.NET Core 10）</td></tr>
+                <tr><td>窗口承载</td><td><code>NativeWebView</code> + WebView2 运行时</td></tr>
+                <tr><td>静态资源</td><td><code>wwwroot/</code>，经虚拟主机名映射提供</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="card">
+        <div class="card-title">当前实例</div>
+        <dl class="kv">
+            <dt>编译模式</dt><dd>@Host.CompileMode</dd>
+            <dt>运行时</dt><dd>@Host.Framework</dd>
+            <dt>架构</dt><dd>@Host.Architecture</dd>
+            <dt>进程 PID</dt><dd>@Host.ProcessId</dd>
+            <dt>机器名</dt><dd>@Host.Machine</dd>
+            <dt>启动于</dt><dd>@Host.StartedAt</dd>
+        </dl>
+        <p class="hint">
+            <code>CompileMode</code> 由 <code>RuntimeFeature.IsDynamicCodeSupported</code> 推导，
+            为 <code>NativeAOT</code> 时说明当前进程没有 JIT。
+        </p>
+    </div>
+</section>
+
+<section class="card section-card">
+    <div class="card-title">请求是怎么走的</div>
+    <ol class="steps">
+        <li><b>Avalonia 启动</b>：<code>NativeWebView</code> 创建 WebView2 环境，把 <code>app.local</code>
+            映射到磁盘上的 <code>wwwroot</code>。</li>
+        <li><b>加载宿主页</b>：<code>index.html</code> 先加载 <code>blazor/bridge.js</code>，
+            把 <code>window.external</code> 接到原生 IPC 通道，再加载 <code>blazor/blazor.webview.js</code>。</li>
+        <li><b>握手</b>：JS 侧发出 <code>AttachPage</code>，<code>AppWebViewManager</code> 把它转给
+            <code>WebViewManager</code>，随后下发 <code>AttachToDocument</code> 与第一个 <code>RenderBatch</code>。</li>
+        <li><b>交互</b>：点击事件以 <code>BeginInvokeDotNet</code> 回到 .NET，渲染结果再以
+            <code>RenderBatch</code> 推回 JS，全程不出进程、不发 HTTP 请求。</li>
+    </ol>
+</section>
+
+<section class="card section-card">
+    <div class="card-title card-title-plain">让 NativeAOT 跑通的四个改造</div>
+    <table class="table table-code">
+        <thead>
+            <tr><th>问题</th><th>处理</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>第三方 WebView 包依赖 <code>[ComImport]</code> 的 <code>Microsoft.Web.WebView2.Core</code>，AOT 下抛
+                    “COM Interop requires ComWrapper”。</td>
+                <td>换成官方 <code>Avalonia.Controls.WebView</code>，其 Windows 后端用
+                    <code>GeneratedComInterface</code> + <code>StrategyBasedComWrappers</code>。</td>
+            </tr>
+            <tr>
+                <td><code>Assembly.Location</code> 在单文件 / AOT 下为空，静态资源清单定位失败。</td>
+                <td>不用 static web assets，改 <code>PhysicalFileProvider</code> + WebView2 虚拟主机名映射。</td>
+            </tr>
+            <tr>
+                <td><code>blazor.webview.js</code> 启动时先 fetch <code>_framework/blazor.modules.json</code>，
+                    404 会让它静默停在 <code>AttachPage</code> 之前。</td>
+                <td>把 <code>[]</code> 落盘到输出目录的 <code>wwwroot/_framework/</code>（源码放在
+                    <code>Assets/</code> 避开静态资源冲突）。</td>
+            </tr>
+            <tr>
+                <td>IPC 用反射式 System.Text.Json，AOT 下 <code>ArrayConverter&lt;…&gt;</code> /
+                    <code>EnumConverter&lt;…&gt;</code> 缺原生代码。</td>
+                <td>启动时给内部 <code>JsonSerializerOptions</code> 注册 <code>JsonElement[]</code> 与两个
+                    <code>JSInterop</code> 枚举的显式转换器。</td>
+            </tr>
+        </tbody>
+    </table>
+</section>
+
+<section class="grid">
+    <div class="card">
+        <div class="card-title">常用命令</div>
+        <pre class="code-block">dotnet run                       # 开发运行
+dotnet publish -c Release -r win-x64 \
+  -p:PublishReadyToRun=true      # R2R 单目录
+.\publish-aot.ps1                # NativeAOT 单文件</pre>
+        <p class="hint">AOT 发布需要本机装有 MSVC 链接器与 Windows SDK，脚本会自动补齐 <code>LIB</code>/<code>INCLUDE</code>。</p>
+    </div>
+
+    <div class="card">
+        <div class="card-title">已知边界</div>
+        <ul class="feature-list">
+            <li><span class="dot dot-blue"></span>依赖 WebView2 Evergreen 运行时</li>
+            <li><span class="dot dot-blue"></span>调试建议设置 <code>URA_AOT_DEBUG=1</code> 生成 <code>aot-debug.log</code></li>
+            <li><span class="dot dot-blue"></span>裁剪相关告警（IL3000 / IL2026 / IL3050）保留为可见提示</li>
+        </ul>
+    </div>
+</section>
+
+<section class="card section-card about-footer">
+    <div class="card-title">作者</div>
+    <p class="about-author">
+        <span class="brand-mark">ura</span>
+        <a href="http://ura.cn" target="_blank" rel="noreferrer">ura.cn</a>
+    </p>
+    <p class="hint">示例代码可自由参考；品牌标识与页面文案版权归作者所有。</p>
+</section>

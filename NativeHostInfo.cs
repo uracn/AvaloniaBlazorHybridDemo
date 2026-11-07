@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Avalonia;
 
@@ -27,6 +28,11 @@ public sealed class NativeHostInfo
         typeof(Application).Assembly.GetName().Version is { } v
             ? $"{v.Major}.{v.Minor}"
             : "unknown";
+
+    /// <summary>True when running as a NativeAOT-compiled binary (no dynamic codegen).</summary>
+    public bool IsNativeAot => !RuntimeFeature.IsDynamicCodeSupported;
+
+    public string CompileMode => IsNativeAot ? "NativeAOT" : "CoreCLR";
 
     public string StartedAt { get; } = DateTime.Now.ToString("HH:mm:ss");
 }

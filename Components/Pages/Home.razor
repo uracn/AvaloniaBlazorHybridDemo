@@ -15,10 +15,10 @@
         <div class="card-title">运行架构</div>
         <ul class="feature-list">
             <li><span class="dot dot-purple"></span>Avalonia @Host.AvaloniaMajorVersion 原生窗口</li>
-            <li><span class="dot dot-blue"></span>BlazorWebView 控件（WebView2）</li>
+            <li><span class="dot dot-blue"></span>自包含 WebView2 宿主（AOT 友好）</li>
             <li><span class="dot dot-green"></span>进程内 Razor 组件 + .NET DI</li>
         </ul>
-        <p class="hint">页面由 <code>wwwroot/index.html</code> 加载 <code>_framework/blazor.webview.js</code>，
+        <p class="hint">页面由 <code>wwwroot/index.html</code> 加载 <code>blazor/blazor.webview.js</code>，
             之后所有交互走 .NET ↔ JS 消息通道，不经过网络请求。</p>
     </div>
 
@@ -30,6 +30,7 @@
             <dt>架构 / PID</dt><dd>@Host.Architecture / @Host.ProcessId</dd>
             <dt>机器名</dt><dd>@Host.Machine</dd>
             <dt>Avalonia</dt><dd>@Host.AvaloniaVersion</dd>
+            <dt>编译模式</dt><dd>@Host.CompileMode</dd>
             <dt>启动时间</dt><dd>@Host.StartedAt</dd>
         </dl>
         <p class="hint">这些数据来自注入的 <code>NativeHostInfo</code>，不是浏览器 API。</p>
