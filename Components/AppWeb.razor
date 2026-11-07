@@ -1,0 +1,13 @@
+@* Root component mounted at #app by AvaloniaBlazorWebViewBuilder *@
+<Router AppAssembly="@typeof(AppWeb).Assembly">
+    <Found Context="routeData">
+        <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+        <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+    </Found>
+    <NotFound>
+        <PageTitle>未找到页面</PageTitle>
+        <LayoutView Layout="@typeof(MainLayout)">
+            <p role="alert">这个地址没有对应的页面。</p>
+        </LayoutView>
+    </NotFound>
+</Router>

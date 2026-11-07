@@ -1,0 +1,36 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="1180" d:DesignHeight="760"
+        x:Class="AvaloniaBlazorHybridDemo.MainWindow"
+        Title="Avalonia Blazor Hybrid - ura.cn"
+        Width="1180" Height="760" MinWidth="720" MinHeight="480"
+        Background="#0E1116">
+    <DockPanel>
+        <!-- Native Avalonia chrome: proves the shell is not HTML -->
+        <Border DockPanel.Dock="Top" Background="#151A22" Padding="20,12"
+                BorderBrush="#252C38" BorderThickness="0,0,0,1">
+            <DockPanel>
+                <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                    <Border Width="30" Height="30" CornerRadius="9" Background="#6C5CE7">
+                        <TextBlock Text="u" Foreground="White" FontSize="17" FontWeight="Bold"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="Avalonia · Blazor Hybrid" FontSize="15" FontWeight="SemiBold"
+                                   Foreground="#E8ECF4" />
+                        <TextBlock Text="Avalonia 原生外壳 + 进程内 Razor 组件 · ura.cn"
+                                   FontSize="11" Foreground="#8893A7" />
+                    </StackPanel>
+                </StackPanel>
+                <Button DockPanel.Dock="Right" HorizontalAlignment="Right" VerticalAlignment="Center"
+                        Click="OnSendToBlazor" Content="发送消息到 Blazor" Padding="14,8"
+                        Background="#6C5CE7" Foreground="White" CornerRadius="8" />
+            </DockPanel>
+        </Border>
+
+        <!-- The Blazor Hybrid surface: Razor components rendered by WebView2 -->
+        <BlazorWebView HostPage="wwwroot/index.html" />
+    </DockPanel>
+</Window>

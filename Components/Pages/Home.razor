@@ -1,0 +1,63 @@
+@page "/"
+@implements IDisposable
+@inject NativeHostInfo Host
+
+<PageTitle>Avalonia Blazor Hybrid · ura.cn</PageTitle>
+
+<h1>Avalonia 里的 Blazor Hybrid</h1>
+<p class="lead">
+    这一页是 Razor 组件，运行在桌面 App 的 .NET 进程里；窗口顶部的标题栏和按钮是 Avalonia 原生控件。
+    两者通过 WebView2 组合在同一个窗口中。
+</p>
+
+<section class="grid">
+    <div class="card">
+        <div class="card-title">运行架构</div>
+        <ul class="feature-list">
+            <li><span class="dot dot-purple"></span>Avalonia @Host.AvaloniaMajorVersion 原生窗口</li>
+            <li><span class="dot dot-blue"></span>BlazorWebView 控件（WebView2）</li>
+            <li><span class="dot dot-green"></span>进程内 Razor 组件 + .NET DI</li>
+        </ul>
+        <p class="hint">页面由 <code>wwwroot/index.html</code> 加载 <code>_framework/blazor.webview.js</code>，
+            之后所有交互走 .NET ↔ JS 消息通道，不经过网络请求。</p>
+    </div>
+
+    <div class="card">
+        <div class="card-title">直接读取本机 .NET 信息</div>
+        <dl class="kv">
+            <dt>操作系统</dt><dd>@Host.Os</dd>
+            <dt>运行时</dt><dd>@Host.Framework</dd>
+            <dt>架构 / PID</dt><dd>@Host.Architecture / @Host.ProcessId</dd>
+            <dt>机器名</dt><dd>@Host.Machine</dd>
+            <dt>Avalonia</dt><dd>@Host.AvaloniaVersion</dd>
+            <dt>启动时间</dt><dd>@Host.StartedAt</dd>
+        </dl>
+        <p class="hint">这些数据来自注入的 <code>NativeHostInfo</code>，不是浏览器 API。</p>
+    </div>
+</section>
+
+<section class="card bridge-card">
+    <div class="card-title">原生 → Blazor 消息桥</div>
+    <p class="bridge-message">@_message</p>
+    <span class="badge">@(_message.Contains("还没有") ? "等待中" : "已收到")</span>
+</section>
+
+@code {
+    private string _message = NativeBridge.LastMessage;
+
+    protected override void OnInitialized()
+    {
+        NativeBridge.MessageReceived += OnNativeMessage;
+    }
+
+    private void OnNativeMessage(string message)
+    {
+        _message = message;
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        NativeBridge.MessageReceived -= OnNativeMessage;
+    }
+}

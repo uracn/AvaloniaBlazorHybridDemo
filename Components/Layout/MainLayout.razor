@@ -1,0 +1,23 @@
+@inherits LayoutComponentBase
+
+<div class="app-shell">
+    <header class="app-header">
+        <div class="brand">
+            <span class="brand-mark">ura.cn</span>
+            <span class="brand-divider"></span>
+            <span class="brand-sub">Avalonia Blazor Hybrid Demo</span>
+        </div>
+        <nav class="nav">
+            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">概览</NavLink>
+            <NavLink class="nav-link" href="counter">计数器</NavLink>
+        </nav>
+    </header>
+
+    <main class="app-main">
+        @Body
+    </main>
+
+    <footer class="app-footer">
+        Blazor Hybrid · Razor 组件直接运行在 .NET 进程内 · 无本地 Web 服务器 / 无 WASM / 无 SignalR
+    </footer>
+</div>

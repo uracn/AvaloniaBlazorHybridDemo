@@ -1,0 +1,169 @@
+:root {
+    --bg: #0e1116;
+    --panel: #171c25;
+    --panel-2: #1d2330;
+    --border: #2a3242;
+    --text: #e8ecf4;
+    --muted: #8893a7;
+    --accent: #6c5ce7;
+    --accent-2: #4aa8ff;
+    --green: #38c793;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+    margin: 0;
+    height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Inter", "Segoe UI", "Microsoft YaHei", system-ui, sans-serif;
+    font-size: 14px;
+    -webkit-font-smoothing: antialiased;
+}
+
+#app { min-height: 100%; }
+
+.boot {
+    padding: 48px;
+    color: var(--muted);
+    text-align: center;
+}
+
+.app-shell {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.app-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 16px 28px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(23, 28, 37, .72);
+}
+
+.brand { display: flex; align-items: center; gap: 14px; }
+
+.brand-mark {
+    font-weight: 700;
+    letter-spacing: .04em;
+    color: #fff;
+    background: var(--accent);
+    padding: 5px 11px;
+    border-radius: 7px;
+}
+
+.brand-divider { width: 1px; height: 18px; background: var(--border); }
+.brand-sub { color: var(--muted); font-size: 13px; }
+
+.nav { display: flex; gap: 6px; }
+
+.nav-link {
+    color: var(--muted);
+    text-decoration: none;
+    padding: 7px 14px;
+    border-radius: 7px;
+    font-size: 13px;
+}
+
+.nav-link:hover { color: var(--text); background: var(--panel-2); }
+.nav-link.active { color: #fff; background: var(--accent); }
+
+.app-main { flex: 1; padding: 30px 28px 36px; }
+
+h1 { margin: 0 0 8px; font-size: 27px; font-weight: 650; letter-spacing: -.01em; }
+
+.lead { margin: 0 0 26px; color: var(--muted); line-height: 1.7; max-width: 780px; }
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
+    gap: 18px;
+}
+
+.card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 22px;
+}
+
+.card-title {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: .09em;
+    color: var(--muted);
+    margin-bottom: 16px;
+}
+
+.feature-list { list-style: none; margin: 0 0 14px; padding: 0; }
+.feature-list li { display: flex; align-items: center; gap: 10px; padding: 7px 0; }
+
+.dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+.dot-purple { background: var(--accent); }
+.dot-blue { background: var(--accent-2); }
+.dot-green { background: var(--green); }
+
+.hint { color: var(--muted); font-size: 12px; line-height: 1.7; margin: 14px 0 0; }
+code { background: var(--panel-2); padding: 2px 5px; border-radius: 4px; font-size: 12px; }
+
+.kv { display: grid; grid-template-columns: 92px 1fr; gap: 8px 12px; margin: 0; font-size: 13px; }
+.kv dt { color: var(--muted); }
+.kv dd { margin: 0; word-break: break-all; }
+
+.bridge-card { margin-top: 18px; }
+.bridge-message { font-size: 15px; margin: 0 0 12px; }
+
+.badge {
+    display: inline-block;
+    font-size: 11px;
+    color: var(--green);
+    border: 1px solid rgba(56, 199, 147, .35);
+    background: rgba(56, 199, 147, .08);
+    padding: 3px 9px;
+    border-radius: 999px;
+}
+
+.counter-card { max-width: 420px; }
+.counter-value { font-size: 52px; font-weight: 700; color: #fff; margin: 4px 0 18px; }
+.counter-actions { display: flex; gap: 10px; }
+
+.btn {
+    background: var(--accent);
+    color: #fff;
+    border: 1px solid var(--accent);
+    border-radius: 8px;
+    padding: 9px 20px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.btn:hover { filter: brightness(1.12); }
+.btn-ghost { background: transparent; color: var(--muted); border-color: var(--border); }
+.btn-ghost:hover { color: var(--text); }
+
+.app-footer {
+    padding: 14px 28px;
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 12px;
+}
+
+#blazor-error-ui {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 12px 20px;
+    background: #7a1f2b;
+    color: #fff;
+    z-index: 9999;
+}
+
+#blazor-error-ui .reload { color: #fff; text-decoration: underline; }
+#blazor-error-ui .dismiss { float: right; cursor: pointer; }

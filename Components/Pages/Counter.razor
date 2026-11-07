@@ -1,0 +1,23 @@
+@page "/counter"
+
+<PageTitle>计数器 · Avalonia Blazor Hybrid</PageTitle>
+
+<h1>计数器</h1>
+<p class="lead">一个普通的 Blazor 组件，状态保存在桌面进程内。</p>
+
+<div class="card counter-card">
+    <div class="counter-value">@_count</div>
+    <div class="counter-actions">
+        <button class="btn" @onclick="Increment">+ 1</button>
+        <button class="btn btn-ghost" @onclick="Reset">重置</button>
+    </div>
+    <p class="hint">点击后由 Blazor 的渲染树增量更新 DOM，没有整页刷新。</p>
+</div>
+
+@code {
+    private int _count;
+
+    private void Increment() => _count++;
+
+    private void Reset() => _count = 0;
+}
